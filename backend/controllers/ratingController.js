@@ -1,4 +1,4 @@
-const db = require('../database/database');
+const {db, fetchAll, fetchFirst, runAsync} =require('../database/database');
 
 exports.addRating = async (req, res) => {
     const {gameId, rating} = req.body;
@@ -8,29 +8,20 @@ exports.addRating = async (req, res) => {
     if(!gameId || !rating || rating < 1 || rating > 5) {
         return res.status(400).json({message: 'Bad add rating request'});
     }
-
-    try{
+    try {
         //check if game is already rated by user
         let gameSql = `select * from ratings where game_id = ? and user_id = ?`;
-        db.get(gameSql, [gameId, userId], (err, existingRating) => {
-            if (err){
-                return res.status(500).json({message: 'db error'});            
-            }
-            if (existingRating) {
-                return res.status(400).json({message: 'Game already rated'});
-            }
-            //add new rating
-            let addSql = `insert into ratings(game_id, rating, user_id) values (?,?,?) `;
-            let values = [gameId, rating, userId];
-            db.run(addSql, values, (err)=> {
-                if (err){
-                    return res.status(500).json({message: 'db error'});            
-                }
-                return res.status(201).json({message: "rating added"});
-            });
-        });        
-
+        const existingRating = await fetchFirst(db, gameSql, [gameId, userId]);            
+        if (existingRating) {
+            return res.status(400).json({message: 'Game already rated'});
+        }
+        //add new rating
+        let addSql = `insert into ratings(game_id, rating, user_id) values (?,?,?) `;
+        let values = [gameId, rating, userId];
+        await runAsync(db,addSql, values);            
+        return res.status(201).json({message: "rating added"});
     } catch (error) {
+        console.error(err);
         return res.status(500).json({message: 'error adding rating'});
     }
 }
@@ -41,45 +32,59 @@ exports.updateRating = async (req, res) => {
     const userId = req.user.id;
     
     //input validation
-    if(!rating || rating <1 || rating > 5) {
+    if(!userId || !rating || rating <1 || rating > 5) {
         return res.status(400).json({message: 'bad rating request'});
     }
 
     try {
         //select rating with id
         let ratingSql = `select * from ratings where id = ?`;        
-        db.get(ratingSql, [id], (err, selectedRating) => {
-            if (err) {
-                return res.status(500).json({message: 'db error'});
-            }
-            if (selectedRating) {
-                //check user created rating
-                if (selectedRating.user_id == userId) {
-                    //update
-                    let updateSql = `update ratings set rating = ? where id = ?`;
-                    db.run(updateSql, [rating, id], (err)=> {
-                        if (err) {
-                            return res.status(500).json({message: 'db error'});
-                        }
-                        return res.status(201).json({message: 'rating updated'});
-                    });
-                    
-                } else {
-                    return res.status(403).json({message: 'rating does not belong to user'});
-                }
+        const selectedRating = await fetchFirst(db,ratingSql, [id]);          
+        if (selectedRating) {
+            //check user created rating
+            if (selectedRating.user_id == userId) {
+                //update
+                let updateSql = `update ratings set rating = ? where id = ?`;
+                await runAsync(db,updateSql, [rating, id]);
+                return res.status(201).json({message: 'rating updated'});
             } else {
-                return res.status(404).json({message:'no rating found at id'});
+                return res.status(403).json({message: 'rating does not belong to user'});
             }
-        })
+        } else {
+            return res.status(404).json({message:'no rating found at id'});
+        }        
     } catch (error) {
+        console.error(err);
         return res.status(500).json({message: 'error updating rating'});
     }
 }
 
 exports.getAllUserRatings = async (req,res) => {
-
+    const {userId} = req.body;
+    if(!userId) {
+        return res.status(400).json({message: 'Missing user id'});
+    }
+    try{
+        userRatingsSql = `select * from ratings where user_id = ?`;
+        const rows = await fetchAll(db,userRatingsSql, [userId]);
+        return res.status(200).json(rows);        
+    } catch (error) {
+        console.error(err);
+        return res.status(500).json({message: 'error loading ratings'});
+    }    
 }
 
 exports.deleteRating = async (req, res) => {
-    
+    const {id} = req.params;
+    if(!id) {
+        return res.status(400).json({message: 'Missing rating id for deletion'});
+    }
+    try{
+        let deleteSql = `delete from ratings where id=?`;
+    await runAsync(db, deleteSql, [id]);
+    return res.status(200).json({message: 'rating deleted'});
+    } catch (error) {
+        console.error(err);
+        return res.status(500).json({message: 'error deleting rating'});
+    }
 }
