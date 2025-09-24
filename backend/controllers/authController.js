@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = process.env;
 
 exports.register = async (req, res) => {
+    console.log('user registration request...');
     const {username, email, password, confirmedPassword } = req.body;
     //input validation
     if (!username || !email || !password || !confirmedPassword) {
@@ -37,15 +38,28 @@ exports.register = async (req, res) => {
         //add user to table
         let addSql = `insert into users(username, email, password) values (?,?,?)`;
         let values = [username, email, hashedPassword];
-        await runAsync(db, addSql, values);                
-        return res.status(201).json({message: "user created"});                                
+        const newUser = await runAsync(db, addSql, values);
+        const newUserId = newUser.lastID; 
+        console.log("New User Created");        
+
+        const token = jwt.sign({id: newUserId}, JWT_SECRET, {expiresIn: "1d"});               
+        return res.status(200).json({
+                message: 'registration successful',
+                token,
+                user: {
+                    id: newUserId,
+                    username: user.username,
+                    email: user.email
+                }
+        });                                
     } catch (error) {
-        console.error(err);
+        console.error(error);
         res.status(500).json({message: "server error", error: error.message});
     }
 }
 
 exports.login = async (req, res) => {
+    console.log('User Log in request..');
     const {email, password} = req.body;
     try {
         //look for user and get password
@@ -57,6 +71,7 @@ exports.login = async (req, res) => {
                 return res.status(400).json({message: 'Wrong email or password'});
             }
             const token = jwt.sign({id: user.id}, JWT_SECRET, {expiresIn: "1d"});
+            console.log('Log in successful');
             return res.status(200).json({
                 message: 'log in successful',
                 token,
@@ -70,7 +85,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({message: 'Wrong email or password'});
         }        
     } catch (error){
-        console.error(err);
+        console.error(error);
         res.status(500).json({message: "server error", error: error.message});
     }
 }
