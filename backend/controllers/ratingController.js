@@ -1,11 +1,12 @@
 const {db, fetchAll, fetchFirst, runAsync} =require('../database/database');
+const { igdbQuery } = require('./igdbController');
 
 exports.addRating = async (req, res) => {
     const {gameId, rating} = req.body;
-    const userId= req.user.id;
+    const userId= req.user?.id;
 
     //input validation
-    if(!gameId || !rating || rating < 1 || rating > 5) {
+    if(!userId||!gameId || !rating || rating < 1 || rating > 5) {
         return res.status(400).json({message: 'Bad add rating request'});
     }
     try {
@@ -29,7 +30,7 @@ exports.addRating = async (req, res) => {
 exports.updateRating = async (req, res) => {
     const {id} = req.params;
     const {rating} = req.body;
-    const userId = req.user.id;
+    const userId = req.user?.id;
     
     //input validation
     if(!userId || !rating || rating <1 || rating > 5) {
@@ -54,7 +55,7 @@ exports.updateRating = async (req, res) => {
             return res.status(404).json({message:'no rating found at id'});
         }        
     } catch (error) {
-        console.error(err);
+        console.error(error);
         return res.status(500).json({message: 'error updating rating'});
     }
 }
@@ -67,9 +68,29 @@ exports.getAllUserRatings = async (req,res) => {
     try{
         userRatingsSql = `select * from ratings where user_id = ?`;
         const rows = await fetchAll(db,userRatingsSql, [userId]);
-        return res.status(200).json(rows);        
+        //build array of game ids
+        const gameIds = [...new Set(rows.map(r=>r.game_id))];
+        console.log(gameIds);
+        if (gameIds.length === 0) {
+            return res.json([]);
+        }
+        const idList = gameIds.join(',');
+        console.log(idList);
+        const games = {};        
+        let query = `fields id,name,cover.url; where id = (${idList}); `;
+        const data = await igdbQuery(query);
+        console.dir(data, { depth: null });
+        data.forEach(g=>(games[g.id] = g));
+        
+        const completeRatingInfo = rows.map(r => ({
+            id: r.id,
+            user_id: r.user_id,
+            rating: r.rating,
+            game: games[r.game_id] || {id: r.game_id}
+        }));
+        return res.status(200).json(completeRatingInfo);        
     } catch (error) {
-        console.error(err);
+        console.error(error);
         return res.status(500).json({message: 'error loading ratings'});
     }    
 }
@@ -84,7 +105,7 @@ exports.deleteRating = async (req, res) => {
     await runAsync(db, deleteSql, [id]);
     return res.status(200).json({message: 'rating deleted'});
     } catch (error) {
-        console.error(err);
+        console.error(error);
         return res.status(500).json({message: 'error deleting rating'});
     }
 }
