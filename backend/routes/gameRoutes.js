@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const ratingController = require('../controllers/ratingController')
+const ratingController = require('../controllers/ratingController');
+const igdbController = require('../controllers/igdbController');
 const validateToken = require('../middleware/auth');
 
 //protect all game routes
 router.use(validateToken);
-router.get('/search', (req,res)=>{
-    res.json({message:'Search endpoint'});
-});
+router.post('/search', async (req, res) => await igdbController.getGameByName(req, res));
 router.get('/user-ratings', ratingController.getAllUserRatings);
 router.post('/rate', ratingController.addRating);
 router.put('/update-rate/:id', ratingController.updateRating);
