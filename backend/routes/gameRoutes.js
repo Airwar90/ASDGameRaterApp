@@ -7,9 +7,9 @@ const validateToken = require('../middleware/auth');
 //protect all game routes
 router.use(validateToken);
 router.post('/search', async (req, res) => await igdbController.getGameByName(req, res));
-router.get('/user-ratings', ratingController.getAllUserRatings);
+router.post('/userratings', ratingController.getAllUserRatings);
 router.post('/rate', ratingController.addRating);
-router.put('/update-rate/:id', ratingController.updateRating);
+router.post('/update-rate/:id', ratingController.updateRating);
 router.delete('/delete/:id', ratingController.deleteRating);
 
 
