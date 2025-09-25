@@ -75,12 +75,17 @@ exports.getAllUserRatings = async (req,res) => {
             return res.json([]);
         }
         const idList = gameIds.join(',');
-        console.log(idList);
-        const games = {};        
+        console.log(idList);               
         let query = `fields id,name,cover.url; where id = (${idList}); `;
         const data = await igdbQuery(query);
-        console.dir(data, { depth: null });
-        data.forEach(g=>(games[g.id] = g));
+        const dataWithNormalisedUrl = data.map(game => ({
+            ...game,
+            cover: game.cover?.url ? `https:${game.cover.url}` : null
+        }));
+        console.dir(dataWithNormalisedUrl, { depth: null });
+
+        const games = {}; 
+        dataWithNormalisedUrl.forEach(g=>(games[g.id] = g));
         
         const completeRatingInfo = rows.map(r => ({
             id: r.id,
