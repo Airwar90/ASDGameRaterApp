@@ -30,19 +30,19 @@ function Login() {
     return (    
     <div className='page-container'>
       
-      <div className='header'>
+      <div className='landing-header'>
         <h1 className='title'>
           Log In to GameRater
         </h1>      
       </div>  
       <div className="content-wrap">
         <div className='auth-form'>
-          <form>
-            <label>Email or Username</label>
+          <form>            
             <input type='text' placeholder='Enter Email...' value={email} onChange={e=> setEmail(e.target.value)}/>
             <br />
-            <label>Password</label>
+            
             <input type='password' placeholder='Enter Password...' value={password} onChange={e=> setPassword(e.target.value)}/>
+            <br />
             <button type="submit" onClick={handleLogin}>Log In</button>
           </form>
         </div>

@@ -32,7 +32,7 @@ function Register() {
 
     return(
         <div className='page-container'>      
-            <div className='header'>
+            <div className='landing-header'>
                 <h1 className='title'>
                     Register to GameRater
                 </h1>      
