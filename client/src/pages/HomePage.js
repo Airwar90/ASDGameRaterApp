@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 import Game from '../components/game';
+import Nav from '../components/nav';
 import '../App.css';
 
  function HomePage() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));  
   const token = localStorage.getItem("token");
-
+  async function checkCred(){if (!token || !user){
+          navigate('/');
+      }}
+      useEffect(()=> { checkCred() }, []);
   const [searchName, setSearchName] = useState('');
   const [results, setResults] = useState([]);
 
@@ -32,7 +38,8 @@ import '../App.css';
 
   return(
     <div className='page-container'>
-        <div className='header'>
+        <Nav user = {user}></Nav>
+        <div className='home-header'>
             <h1 className='Title'>Welcome to GameRater</h1>
             <h3 className='Subtitle'>Search for game to rate</h3>
         </div>    
@@ -45,7 +52,11 @@ import '../App.css';
             </div>
             {results.length > 0 &&
                 results.map((g) => (
-                <Game key={g.id} game={g} />
+                    <div key={g.id}>
+                        <Link to="/AddRating" className="card-link" state={{game: g}}>
+                            <Game game={g} />
+                        </Link>
+                    </div>
                 ))
             }
         </div>
