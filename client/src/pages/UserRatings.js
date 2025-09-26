@@ -34,19 +34,17 @@ function UserRatings(){
             <div className='title'>
                 <h3>Your rated games</h3>
             </div>
-            <div className='game-grid'>
-                <div className='game-and-rating'>
-                    {results.length > 0 && (
-                        results.map((info) => (
-                            <div key={info.id}>
-                                <Link to="/updateRating" state={{info}}>
-                                    <Game game = {info.game}/>
-                                </Link>
-                                <BasicRating value={info.rating} readOnly = {true}/>
-                            </div>
-                        )))
-                    }
-                </div>
+            <div className='game-grid'>                
+                {results.length > 0 && (
+                    results.map((info) => (
+                        <div key={info.id} className="card-wrapper">
+                            <Link to="/updateRating" state={{info}}>
+                                <Game game = {info.game}/>
+                            </Link>
+                            <BasicRating value={info.rating} readOnly = {true}/>
+                        </div>
+                    )))
+                }                
             </div>
         </div>
     )

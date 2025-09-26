@@ -50,15 +50,17 @@ import '../App.css';
                     <button type="submit" onClick={handleSearch}>Search</button>
                 </form>
             </div>
-            {results.length > 0 &&
-                results.map((g) => (
-                    <div key={g.id}>
-                        <Link to="/AddRating" className="card-link" state={{game: g}}>
-                            <Game game={g} />
-                        </Link>
-                    </div>
-                ))
-            }
+            <div className='game-grid'>
+                {results.length > 0 &&
+                    results.map((g) => (
+                        <div key={g.id}>
+                            <Link to="/AddRating" className="card-link" state={{game: g}}>
+                                <Game game={g} />
+                            </Link>
+                        </div>
+                    ))
+                }
+            </div>
         </div>
     </div>
   )

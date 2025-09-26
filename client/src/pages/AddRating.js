@@ -46,18 +46,20 @@ function AddRating() {
 
     return (
         <div>
-            <div className="content-wrap">
+            <div className="page-container">
                 <Nav user = {user}></Nav>
-                <div className="game-info">
-                    {location.state?.game ? (                        
-                        <Game game={location.state.game} />                        
-                    ) : (
-                        <p>No game selected.</p>
-                    )}
-                </div>
-                <div className="rating-wrapper">
-                    <BasicRating value = {value} onChange={setValue}/>
-                    <button type="submit" onClick={(e)=>handleAddRating(e)}>submit rating</button>
+                <div className="content-wrap">
+                    <div className="game-info">
+                        {location.state?.game ? (                        
+                            <Game game={location.state.game} />                        
+                        ) : (
+                            <p>No game selected.</p>
+                        )}
+                    </div>
+                    <div className="rating-wrapper">
+                        <BasicRating value = {value} onChange={setValue}/>
+                        <button type="submit" onClick={(e)=>handleAddRating(e)}>submit rating</button>
+                    </div>
                 </div>
             </div>
         </div>

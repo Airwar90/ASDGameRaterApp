@@ -48,7 +48,7 @@ function UpdateRating() {
 
     return (
         <div>
-            <div className="content-wrap">
+            <div className="page-container">
                 <Nav user = {user}></Nav>
                 <div className="game-info">
                     {info?.game ? (                        
