@@ -48,8 +48,8 @@ exports.register = async (req, res) => {
                 token,
                 user: {
                     id: newUserId,
-                    username: user.username,
-                    email: user.email
+                    username: username,
+                    email: email
                 }
         });                                
     } catch (error) {
