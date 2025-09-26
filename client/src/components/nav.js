@@ -10,7 +10,7 @@ function Nav({ user }) {
   }
   return (
     <div className='navigation-menu'>  
-        <div>
+        <div className='navbar-title'>
             <h1 id="navbar-title" >GameRater</h1>
         </div>    
               
